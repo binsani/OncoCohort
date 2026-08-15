@@ -144,6 +144,10 @@ npm run build
 
 Before using OncoCohort with real clinical data, complete an appropriate security and governance review. At minimum, define access-control ownership, consent requirements, retention policy, audit review, incident response, export approval, backup and recovery, and all applicable regulatory obligations.
 
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
+
 ## License
 
-No open-source license has been granted. All rights are reserved unless the repository owner adds a license.
+OncoCohort is available under the [Apache License 2.0](LICENSE).
