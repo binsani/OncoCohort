@@ -27,7 +27,7 @@ export default function Home(){
   const ping=(message:string)=>{setNotice(message);window.setTimeout(()=>setNotice(""),2400)};
   return <main>
     {notice&&<div className="toast" role="status">{notice}</div>}
-    <header className="topbar"><a className="brand" href="#top"><span>O</span>OncoCohort</a><nav><a className="active" href="#workspace">Workspace</a><a href="#cohorts">Cohorts</a><a href="#activity">Activity</a></nav><div className="user"><i>●</i><span>SA</span><b>Dr. S. Adeyemi</b></div></header>
+    <header className="topbar"><a className="brand" href="#top"><span>O</span>OncoCohort</a><nav><a className="active" href="#workspace">Workspace</a><a href="#cohorts">Cohorts</a><a href="/activity">Activity</a></nav><div className="user"><i>●</i><span>SA</span><b>Dr. S. Adeyemi</b></div></header>
     <div className="page" id="workspace">
       <section className="hero" id="top"><div><label>RESEARCH WORKSPACE</label><h1>Good morning, Dr. Adeyemi.</h1><p>Your oncology cohort is up to date. Review eligibility, outcomes, and recent changes across participating sites.</p></div><button className="primary" onClick={()=>ping("New cohort workspace created")}>＋ Create cohort</button></section>
       <section className="metrics">
