@@ -1,4 +1,12 @@
-// Intentionally empty by default.
-// Add Drizzle tables here when the site actually needs a database.
-// See examples/d1/db/schema.ts for an opt-in example.
-export {};
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const cohorts = sqliteTable("cohorts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerId: text("owner_id").notNull(),
+  name: text("name").notNull(),
+  cancerType: text("cancer_type").notNull(),
+  status: text("status").notNull().default("Draft"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, (table) => [index("idx_cohorts_owner_created").on(table.ownerId, table.createdAt)]);
+
+export type Cohort = typeof cohorts.$inferSelect;

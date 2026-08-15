@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable jsx-a11y/label-has-associated-control -- labels are visual section eyebrows */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const patients = [
   ["OC-1042","AM",58,"F","Breast","II","HER2+","On treatment","Lagos","Today"],
@@ -13,6 +13,20 @@ const filters = ["All patients","Breast","Prostate","Ovarian","Lung"];
 
 export default function Home(){
   const [active,setActive]=useState("All patients"); const [query,setQuery]=useState(""); const [notice,setNotice]=useState("");
+  useEffect(()=>{
+    const buttons=[...document.querySelectorAll("button")];
+    const create=buttons.find(button=>button.textContent?.includes("Create cohort"));
+    const exportButton=buttons.find(button=>button.textContent?.includes("Export"));
+    const createHandler=async()=>{
+      const name=window.prompt("Cohort name"); if(!name)return;
+      const cancerType=window.prompt("Cancer type"); if(!cancerType)return;
+      const response=await fetch("/api/cohorts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name,cancerType})});
+      setNotice(response.ok?`Saved cohort: ${name}`:"Cohort could not be saved");
+    };
+    const exportHandler=()=>{window.location.assign("/api/export")};
+    create?.addEventListener("click",createHandler); exportButton?.addEventListener("click",exportHandler);
+    return()=>{create?.removeEventListener("click",createHandler);exportButton?.removeEventListener("click",exportHandler)};
+  },[]);
   const filtered=useMemo(()=>patients.filter(p=>(active==="All patients"||p[4]===active)&&p.join(" ").toLowerCase().includes(query.toLowerCase())),[active,query]);
   const ping=(message:string)=>{setNotice(message);window.setTimeout(()=>setNotice(""),2400)};
   return <main>
