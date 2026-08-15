@@ -1,100 +1,149 @@
-# vinext-starter
+# OncoCohort
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+OncoCohort is a private oncology research workspace for organizing clinical cohorts, demonstration patient records, enrollment activity, and operational reports across participating sites.
 
-## Prerequisites
+**Live application:** [oncocohort-workspace.salimsaniexclusive.chatgpt.site](https://oncocohort-workspace.salimsaniexclusive.chatgpt.site)
 
-- Node.js `>=22.13.0`
+> OncoCohort is currently a demonstration workspace. Do not enter real patient-identifying information or protected health information until the required organizational, legal, privacy, and security controls have been completed.
 
-## Quick Start
+## Features
+
+- Dashboard with enrollment, eligibility, cohort, and participating-site summaries
+- Cohort creation and management by cancer type
+- Demonstration patient directory with search and filtering
+- Patient enrollment into saved cohorts
+- Consent, treatment-status, biomarker, stage, and site tracking
+- CSV export for authorized patient-directory data
+- Reports for cancer types, disease stages, and enrollment indicators
+- Append-only activity view for cohort, patient, enrollment, and export events
+- Admin settings for workspace identity, regional defaults, notifications, governance, and session preferences
+- Login, registration, and secure logout flows using Sign in with ChatGPT
+- Responsive layouts for desktop, tablet, and mobile use
+
+## Technology
+
+- React 19
+- TypeScript
+- [vinext](https://github.com/cloudflare/vinext) and Vite
+- Cloudflare Workers-compatible server output
+- Cloudflare D1
+- Drizzle ORM
+- Tailwind CSS 4
+- OpenAI Sites hosting and identity headers
+
+## Application routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Main research dashboard |
+| `/cohorts` | Create and manage cohorts |
+| `/patients` | Manage demonstration patient records |
+| `/reports` | Review cohort and patient summaries |
+| `/activity` | View the workspace audit trail |
+| `/settings` | Manage administrative preferences and logout |
+| `/login` | Secure workspace sign-in |
+| `/register` | Workspace access registration |
+| `/logout` | Secure sign-out redirect |
+
+The application also provides authenticated API routes under `/api` for cohorts, patients, enrollments, activity, and CSV export.
+
+## Data model
+
+The D1 database stores:
+
+- `cohorts`: user-owned clinical cohort definitions
+- `patients`: user-owned demonstration patient records
+- `cohort_patients`: cohort enrollment relationships
+- `audit_events`: activity records for important workspace actions
+
+Every application query is scoped to the authenticated owner's stable user ID.
+
+## Authentication
+
+Hosted identity is provided by Sign in with ChatGPT. The platform injects authenticated identity headers, and `app/chatgpt-auth.ts` exposes helpers for:
+
+- reading the current user
+- requiring authentication
+- creating safe sign-in and sign-out destinations
+
+The reserved `/signin-with-chatgpt`, `/signout-with-chatgpt`, and `/callback` paths are owned by the hosting platform.
+
+## Local development
+
+### Requirements
+
+- Node.js 22.13 or newer
+- npm
+
+### Setup
 
 ```bash
+git clone https://github.com/binsani/OncoCohort.git
+cd OncoCohort
 npm install
 npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+The local Vite configuration supplies development-compatible platform bindings. Hosted identity headers are only available through the deployed Sites environment, so authenticated API behavior may differ locally.
+
+## Useful commands
+
+```bash
+npm run dev          # Start the local development server
+npm run build        # Create and validate the production build
+npm run start        # Run the production build locally
+npm run test         # Build and run the rendered HTML test
+npm run lint         # Run ESLint
+npm run db:generate  # Generate Drizzle migrations after schema changes
+```
+
+## Database changes
+
+Update `db/schema.ts`, then generate a migration:
+
+```bash
+npm run db:generate
+```
+
+Review every generated file in `drizzle/` before committing it. The Sites deployment packages these migrations with the application.
+
+## Project structure
+
+```text
+app/
+  api/                 Authenticated API routes
+  activity/            Audit and activity page
+  cohorts/             Cohort management page
+  login/               Login experience
+  logout/              Secure logout redirect
+  patients/            Patient directory page
+  register/            Access registration experience
+  reports/             Reporting page
+  settings/            Admin settings page
+db/
+  index.ts             D1 connection
+  schema.ts            Drizzle schema
+drizzle/               Generated D1 migrations
+public/                Static and social-preview assets
+.openai/hosting.json   Sites project and binding declaration
+```
+
+## Deployment
+
+The application is deployed with OpenAI Sites as a private, Cloudflare Workers-compatible project. The hosting configuration declares the logical `DB` D1 binding in `.openai/hosting.json`.
+
+Run a successful production build before publishing:
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## Privacy and governance
 
-## Included Shape
+Before using OncoCohort with real clinical data, complete an appropriate security and governance review. At minimum, define access-control ownership, consent requirements, retention policy, audit review, incident response, export approval, backup and recovery, and all applicable regulatory obligations.
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+## License
 
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+No open-source license has been granted. All rights are reserved unless the repository owner adds a license.
