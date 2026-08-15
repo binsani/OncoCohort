@@ -1,5 +1,5 @@
 import vinext from "vinext";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -9,6 +9,35 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+
+const exposeRuntimeEnv = {
+  name: "oncocohort:runtime-env",
+  enforce: "pre" as const,
+  transform(code: string, id: string) {
+    if (!id.replaceAll("\\", "/").endsWith("vinext/dist/server/app-router-entry.js")) return null;
+    return code.replace(
+      "var app_router_entry_default = { async fetch(request, env, ctx) {",
+      "var app_router_entry_default = { async fetch(request, env, ctx) { globalThis.__ONCO_RUNTIME_ENV__ = env;",
+    );
+  },
+  renderChunk(code: string, chunk: { fileName: string }) {
+    if (chunk.fileName !== "index.js") return null;
+    const match = code.match(/,([A-Za-z_$][\w$]*) as default,/);
+    if (!match) return null;
+    const original = match[1];
+    const wrapped = `const __oncoDefault={fetch(request,env,ctx){globalThis.__ONCO_RUNTIME_ENV__=env;return ${original}.fetch(request,env,ctx)}};`;
+    return wrapped + code.replace(`,${original} as default,`, ",__oncoDefault as default,");
+  },
+  generateBundle(_options, bundle) {
+    for (const output of Object.values(bundle)) {
+      if (output.type !== "chunk" || !output.isEntry || !output.fileName.endsWith("index.js") || output.code.includes("__oncoDefault")) continue;
+      const match = output.code.match(/([A-Za-z_$][\w$]*) as default/);
+      if (!match) continue;
+      const original = match[1];
+      output.code = `const __oncoDefault={fetch(request,env,ctx){globalThis.__ONCO_RUNTIME_ENV__=env;return ${original}.fetch(request,env,ctx)}};` + output.code.replace(`${original} as default`, "__oncoDefault as default");
+    }
+  },
+} satisfies Plugin;
 
 const localBindingConfig = {
   main: "./worker/index.ts",
@@ -51,7 +80,7 @@ export default defineConfig(async () => {
         ? { watch: { useFsEvents: false, usePolling: true } }
         : undefined,
       build: { rolldownOptions: { external: ["cloudflare:workers"] } },
-      plugins: [vinext()],
+      plugins: [exposeRuntimeEnv, vinext()],
     };
   }
 
@@ -64,6 +93,7 @@ export default defineConfig(async () => {
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
     plugins: [
+      exposeRuntimeEnv,
       vinext(),
       sites(),
       cloudflare({
