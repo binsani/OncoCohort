@@ -1,0 +1,2 @@
+/* Local Vite resolves imports in app/globals.css from the project root. */
+@import "./app/subpages.css";
