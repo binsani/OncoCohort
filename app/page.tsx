@@ -18,16 +18,23 @@ export default function Home(){
     const buttons=[...document.querySelectorAll("button")];
     const create=buttons.find(button=>button.textContent?.includes("Create cohort"));
     const exportButton=buttons.find(button=>button.textContent?.includes("Export"));
+    const reportButton=buttons.find(button=>button.textContent?.includes("View report"));
+    const activityButton=buttons.find(button=>button.textContent?.includes("View all activity"));
+    const patientsButton=buttons.find(button=>button.textContent?.includes("View all patients"));
     const createHandler=()=>document.getElementById("cohort-manager")?.scrollIntoView({behavior:"smooth"});
     const exportHandler=()=>{window.location.assign("/api/export")};
+    const reportHandler=()=>window.location.assign("/reports");
+    const activityHandler=()=>window.location.assign("/activity");
+    const patientsHandler=()=>window.location.assign("/patients");
     create?.addEventListener("click",createHandler); exportButton?.addEventListener("click",exportHandler);
-    return()=>{create?.removeEventListener("click",createHandler);exportButton?.removeEventListener("click",exportHandler)};
+    reportButton?.addEventListener("click",reportHandler);activityButton?.addEventListener("click",activityHandler);patientsButton?.addEventListener("click",patientsHandler);
+    return()=>{create?.removeEventListener("click",createHandler);exportButton?.removeEventListener("click",exportHandler);reportButton?.removeEventListener("click",reportHandler);activityButton?.removeEventListener("click",activityHandler);patientsButton?.removeEventListener("click",patientsHandler)};
   },[]);
   const filtered=useMemo(()=>patients.filter(p=>(active==="All patients"||p[4]===active)&&p.join(" ").toLowerCase().includes(query.toLowerCase())),[active,query]);
   const ping=(message:string)=>{setNotice(message);window.setTimeout(()=>setNotice(""),2400)};
   return <main>
     {notice&&<div className="toast" role="status">{notice}</div>}
-    <header className="topbar"><a className="brand" href="#top"><span>O</span>OncoCohort</a><nav><a className="active" href="#workspace">Workspace</a><a href="#cohorts">Cohorts</a><a href="/activity">Activity</a></nav><div className="user"><i>●</i><span>SA</span><b>Dr. S. Adeyemi</b></div></header>
+    <header className="topbar"><a className="brand" href="#top"><span>O</span>OncoCohort</a><nav><a className="active" href="#workspace">Workspace</a><a href="/cohorts">Cohorts</a><a href="/patients">Patients</a><a href="/reports">Reports</a><a href="/activity">Activity</a></nav><div className="user"><i>●</i><span>SA</span><b>Dr. S. Adeyemi</b></div></header>
     <div className="page" id="workspace">
       <section className="hero" id="top"><div><label>RESEARCH WORKSPACE</label><h1>Good morning, Dr. Adeyemi.</h1><p>Your oncology cohort is up to date. Review eligibility, outcomes, and recent changes across participating sites.</p></div><button className="primary" onClick={()=>ping("New cohort workspace created")}>＋ Create cohort</button></section>
       <section className="metrics">
