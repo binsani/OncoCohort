@@ -8,6 +8,13 @@
       "when": 1786827600000,
       "tag": "0000_oncocohort",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786829400000,
+      "tag": "0001_clinical_workflows",
+      "breakpoints": true
     }
   ]
 }
