@@ -7,7 +7,7 @@ type Settings={workspace:string;organization:string;timezone:string;dateFormat:s
 const defaults:Settings={workspace:"Oncology Research Workspace",organization:"West African Oncology Collaborative",timezone:"Africa/Lagos",dateFormat:"DD/MM/YYYY",emailDigest:true,eligibilityAlerts:true,exportApproval:true,sessionTimeout:"30 minutes"};
 export default function SettingsPage(){
   const [settings,setSettings]=useState(defaults);const [saved,setSaved]=useState(false);
-  useEffect(()=>{try{const stored=localStorage.getItem("oncocohort-admin-settings");if(stored)setSettings({...defaults,...JSON.parse(stored)})}catch{}},[]);
+  useEffect(()=>{try{const stored=localStorage.getItem("oncocohort-admin-settings");if(stored)setSettings({...defaults,...JSON.parse(stored)})}catch{/* Ignore malformed device-local preferences and keep safe defaults. */}},[]);
   function update<K extends keyof Settings>(key:K,value:Settings[K]){setSettings(current=>({...current,[key]:value}));setSaved(false)}
   function submit(event:FormEvent){event.preventDefault();localStorage.setItem("oncocohort-admin-settings",JSON.stringify(settings));setSaved(true);window.setTimeout(()=>setSaved(false),3000)}
   function reset(){setSettings(defaults);localStorage.removeItem("oncocohort-admin-settings");setSaved(false)}
@@ -22,4 +22,4 @@ export default function SettingsPage(){
     </div></div><footer className="settingsActions"><button type="button" onClick={reset}>Restore defaults</button><button type="submit">Save settings</button></footer></form>
   </div></main>
 }
-function Toggle({title,copy,checked,onChange}:{title:string;copy:string;checked:boolean;onChange:(value:boolean)=>void}){return <label className="settingRow toggleRow"><div><b>{title}</b><span>{copy}</span></div><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><i aria-hidden="true"/></label>}
+function Toggle({title,copy,checked,onChange}:{title:string;copy:string;checked:boolean;onChange:(value:boolean)=>void}){return <label className="settingRow toggleRow"><div><b>{title}</b><span>{copy}</span></div><input aria-label={title} type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><i aria-hidden="true"/></label>}

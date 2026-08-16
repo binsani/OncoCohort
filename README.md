@@ -144,6 +144,15 @@ npm run build
 
 Before using OncoCohort with real clinical data, complete an appropriate security and governance review. At minimum, define access-control ownership, consent requirements, retention policy, audit review, incident response, export approval, backup and recovery, and all applicable regulatory obligations.
 
+## Approval-readiness documentation
+
+- [Intended use and product boundary](docs/INTENDED_USE.md)
+- [Risk management file](docs/RISK_MANAGEMENT.md)
+- [Software validation plan](docs/VALIDATION_PLAN.md)
+- [Privacy and data-protection readiness](docs/PRIVACY_AND_DATA_PROTECTION.md)
+- [Quality and release process](docs/QUALITY_AND_RELEASE.md)
+- [Nigeria regulatory pathway](docs/REGULATORY_PATHWAY.md)
+
 ## Contributing
 
 Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
